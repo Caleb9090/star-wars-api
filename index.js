@@ -1,5 +1,6 @@
 const express = require('express')
 const models = require('./models')
+const bodyParser = require('body-parser')
 
 let app = express()
 
@@ -10,7 +11,7 @@ app.get('/rebels', (request, response) => {
 })
 
 app.get('/rebels/:identifier', (request, response) => {
-  if (typeof request.params.identifier === 'integer') {
+  if (!isNaN(request.params.identifier)) {
     models.Rebels.findAll({ where: { id: request.params.identifier }, }).then((rebel) => {
       response.send(rebel)
     })
@@ -21,14 +22,14 @@ app.get('/rebels/:identifier', (request, response) => {
   }
 })
 
-app.post('/rebels', (request, response) => {
+app.post('/rebels', bodyParser.json(), async (request, response) => {
   const { name, callSign, rank } = request.body
 
   if (!name || !callSign || !rank) {
     response.status(400).send('The following attributes are required: name, callSign, rank')
   }
 
-  models.Heroes.create({ name, callSign, rank }).then((newRebel) => {
+  await models.Rebels.create({ name, callSign, rank }).then((newRebel) => {
     response.status(201).send(newRebel)
   })
 })
